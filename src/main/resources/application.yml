@@ -2,6 +2,7 @@
 spring:
   jpa:
 #    show-sql: false
+  mvc.favicon.enabled: false
 
 jwt:
   clientId: glee-o-meter

@@ -12,15 +12,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Configuration
 @Slf4j
 public class LoadDatabase {
 
-    private final String[] words = { "one", "two", "three", "rain", "sun", "shine", "table", "run", "child", "parrot" };
+    @Value("${data.users:admin,userman,user1,user2,user3,user4,user5}")
+    private String[] users;
+    @Value("${data.nouns:sky,winter,sun,moon,spring,weekend,fall,summer,mountain,wolf,bird}")
+    private String[] nouns;
+    @Value("${data.verbs:falling,rising,exploding,shining,coming,lightning,howling,chirping}")
+    private String[] verbs;
+    @Value("${data.feelings:bad,numb,fine,good}")
+    private String[] feelings;
+    @Value("${data.timeOfDay:morning,afternoon,evening,night}")
+    private String[] timeOfDay;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -28,14 +34,18 @@ public class LoadDatabase {
     @Value("clientSecret:secret")
     private String clientSecret;
 
+    int rnd(int size) {
+        return (int) (Math.random() * size);
+    }
+
     @Bean
     CommandLineRunner initUsers(UserRepository repo) {
 
         return args -> {
-            for (int i = 0; i < words.length; i++) {
-                String email = words[i] + "@" + words[i] + ".com";
+            for (int i = 0; i < users.length; i++) {
+                String email = users[i] + "@" + users[i] + ".com";
                 User.Role role = i > 1 ? User.Role.USER : i == 0 ? User.Role.ADMIN : User.Role.USER_MANAGER;
-                Double minGleePerDay = Math.random() * 7000;
+                double minGleePerDay = rnd(1000 * feelings.length);
                 String pwd = passwordEncoder.encode("pwd");
                 log.info("save {}", repo.save(new User(null, email, pwd, role, minGleePerDay, null)));
             }
@@ -48,9 +58,10 @@ public class LoadDatabase {
             for (int i = 0; i < 100; i++) {
                 LocalDate date = LocalDate.ofEpochDay((long) (10_000L + Math.random() * 10_000));
                 LocalTime time = LocalTime.ofSecondOfDay((long) (Math.random() * 24 * 3600));
-                String text = Arrays.stream(words).filter(w -> Math.random() > 0.5).collect(Collectors.joining(" "));
-                Double value = Math.random() * 3600;
-                User user = StreamSupport.stream(userRepo.findAll().spliterator(), false).filter(u -> Math.random() > 0.5).findFirst().get();
+                int u = rnd(users.length);
+                double value = rnd(1000 * feelings.length);
+                String text = "This " + timeOfDay[(int) (((time.getHour() + 18) % 24) * timeOfDay.length / 24.0)] + " the " + nouns[rnd(nouns.length)] + " is " + verbs[rnd(verbs.length)] + " and I'm feeling " + feelings[(int) (value / 1000)];
+                User user = userRepo.findByEmail(users[u] + "@" + users[u] + ".com").orElse(userRepo.findAll().iterator().next());
                 log.info("save {}", repo.save(new Glee(null, date, time, text, value, user)));
             }
         };
