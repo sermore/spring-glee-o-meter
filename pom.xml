@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>net.reliqs</groupId>
-    <artifactId>glee-o-meter-spring</artifactId>
+    <artifactId>spring-glee-o-meter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
-    <name>glee-o-meter-spring</name>
+    <name>spring-glee-o-meter</name>
     <description>REST backend for glee-o-meter application</description>
 
     <parent>
