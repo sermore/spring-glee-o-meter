@@ -10,13 +10,7 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-
-import java.util.Arrays;
 
 @Configuration
 @EnableAuthorizationServer
@@ -26,16 +20,13 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final UserDetailsService userDetailService;
+    private final UserDetailsService userService;
 
     @Value("${jwt.clientId:glee-o-meter}")
     private String clientId;
 
     @Value("${jwt.client-secret:secret}")
     private String clientSecret;
-
-    @Value("${jwt.signing-key:123}")
-    private String jwtSigningKey;
 
     @Value("${jwt.accessTokenValidititySeconds:43200}") // 12 hours
     private int accessTokenValiditySeconds;
@@ -46,18 +37,10 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
     @Value("${jwt.refreshTokenValiditySeconds:2592000}") // 30 days
     private int refreshTokenValiditySeconds;
 
-    public OAuthConfiguration(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserDetailsService userDetailService) {
+    public OAuthConfiguration(AuthenticationManager authenticationManager, PasswordEncoder passwordEncoder, UserDetailsService userService) {
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
-        this.userDetailService = userDetailService;
-    }
-
-    @Override
-    public void configure(final AuthorizationServerSecurityConfigurer oauthServer) {
-        oauthServer
-                .tokenKeyAccess("permitAll()")
-                .checkTokenAccess("isAuthenticated()")
-                .allowFormAuthenticationForClients();
+        this.userService = userService;
     }
 
     @Override
@@ -74,30 +57,16 @@ public class OAuthConfiguration extends AuthorizationServerConfigurerAdapter {
 
     @Override
     public void configure(final AuthorizationServerEndpointsConfigurer endpoints) {
-        endpoints.tokenStore(tokenStore())
-                .tokenEnhancer(tokenEnhancerChain())
-                .userDetailsService(userDetailService)
+        endpoints
+                .accessTokenConverter(accessTokenConverter())
+                .userDetailsService(userService)
                 .authenticationManager(authenticationManager);
     }
 
     @Bean
-    public TokenStore tokenStore() {
-        return new JwtTokenStore(accessTokenConverter());
-    }
-
-    @Bean
-    public JwtAccessTokenConverter accessTokenConverter() {
+    JwtAccessTokenConverter accessTokenConverter() {
         JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        converter.setSigningKey(jwtSigningKey);
         return converter;
-    }
-
-    @Bean
-    public TokenEnhancerChain tokenEnhancerChain() {
-        final TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
-//        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(new MyTokenEnhancer(), accessTokenConverter()));
-        tokenEnhancerChain.setTokenEnhancers(Arrays.asList(accessTokenConverter()));
-        return tokenEnhancerChain;
     }
 
 }

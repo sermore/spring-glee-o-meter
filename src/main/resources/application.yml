@@ -7,6 +7,5 @@ spring:
 jwt:
   clientId: glee-o-meter
   client-secret: secret
-  signing-key: 123
   accessTokenValidititySeconds: 100
   refreshTokenValiditySeconds: 1000
