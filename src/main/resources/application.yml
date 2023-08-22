@@ -1,11 +1,29 @@
 ---
 spring:
+  security:
+    oauth2:
+      client:
+
   jpa:
-#    show-sql: false
-  mvc.favicon.enabled: false
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+        dialect: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+  datasource:
+    hikari:
+      jdbc-url: jdbc:h2:mem:test
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
+
 
 jwt:
   clientId: glee-o-meter
   client-secret: secret
   accessTokenValidititySeconds: 100
   refreshTokenValiditySeconds: 1000
+server:
+  port: 8081

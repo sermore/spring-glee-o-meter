@@ -1,7 +1,18 @@
 ---
 spring:
   jpa:
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: true
+  datasource:
+    hikari:
+      jdbc-url: jdbc:h2:~/test
+      driver-class-name: org.h2.Driver
+      username: sa
+      password:
 #    show-sql: false
+
 
 jwt:
   clientId: glee-o-meter
