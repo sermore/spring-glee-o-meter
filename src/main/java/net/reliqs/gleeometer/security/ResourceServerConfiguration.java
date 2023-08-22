@@ -8,6 +8,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableResourceServer
@@ -23,21 +24,26 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
         resources.resourceId("api");
     }
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .antMatcher("/api/**")
-                .authorizeRequests()
-                .antMatchers("/api/signin**").permitAll()
-                .antMatchers("/api/signin/**").permitAll()
-                .antMatchers("/api/glee**").hasAnyAuthority("ADMIN", "USER")
-                .antMatchers("/api/users**").hasAuthority("ADMIN")
-                .antMatchers("/api/**").authenticated()
-                .anyRequest().authenticated()
-                .and()
-                .exceptionHandling().authenticationEntryPoint(customAuthenticationEntryPoint).accessDeniedHandler(new CustomAccessDeniedHandler());
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .securityMatcher("/api/**")
+                .authorizeHttpRequests(registry -> registry
+                        .requestMatchers("/api/signin**").permitAll()
+                        .requestMatchers("/api/signin/**").permitAll()
+                        .requestMatchers("/api/glee**").hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers("/api/users**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .exceptionHandling(registry -> registry
+                    .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(new CustomAccessDeniedHandler())
+                );
+
+        return http.build();
     }
 
 }

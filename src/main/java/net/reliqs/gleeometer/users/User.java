@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import net.reliqs.gleeometer.glee.Glee;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 
 @Data
